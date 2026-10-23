@@ -1817,3 +1817,16 @@ fn paste_masks_skips_locked_layers() {
     assert!(s.execute("edit.paste", json!({})).is_err());
     assert_eq!(layer(&s, b).masks().unwrap().groups().count(), 0);
 }
+
+#[test]
+fn copy_with_an_explicit_layer_ignores_the_selected_mask() {
+    let mut s = comp();
+    let a = solid(&mut s, "#ff0000");
+    s.execute("layer.select", json!({"layers": [a]})).unwrap();
+    s.execute("layer.addMask", json!({})).unwrap();
+    let mask = layer(&s, a).masks().unwrap().groups().next().unwrap().uid;
+    s.execute("prop.select", json!({"layer": a, "prop": mask})).unwrap();
+    s.execute("edit.copy", json!({"layer": a})).unwrap();
+    assert_eq!(s.state.clipboard.len(), 1, "the named layer is copied");
+    assert!(s.state.mask_clipboard.is_empty());
+}

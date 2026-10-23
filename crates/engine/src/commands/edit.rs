@@ -242,8 +242,9 @@ fn copy(s: &mut Session, p: &Value) -> Result<Value> {
     if p.get("layers").is_none() && !super::effect::selected_effects(s).is_empty() {
         return s.execute("effect.copy", json!({}));
     }
-    // Masks selected → copy them (not their layer), for Paste onto other layers (#2091).
-    if p.get("layers").is_none() {
+    // Masks selected → copy them (not their layer), for Paste onto other layers (#2091), unless
+    // a layer is named explicitly.
+    if p.get("layers").is_none() && p.get("layer").is_none_or(Value::is_null) {
         let masks = super::prop_groups::copy_masks(s);
         if !masks.is_empty() {
             clear_clipboards(s);
